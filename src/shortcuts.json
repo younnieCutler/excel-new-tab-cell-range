@@ -1,0 +1,17 @@
+{
+    "actions": [
+        {
+            "id": "openInCellFocus",
+            "type": "ExecuteFunction",
+            "name": "CellFocusで開く"
+        }
+    ],
+    "shortcuts": [
+        {
+            "action": "openInCellFocus",
+            "key": {
+                "default": "Ctrl+Shift+F"
+            }
+        }
+    ]
+}
