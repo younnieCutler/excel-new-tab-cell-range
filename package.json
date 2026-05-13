@@ -4,6 +4,7 @@
   "description": "Excel Add-in for focused cell range editing",
   "scripts": {
     "dev": "webpack serve --mode development",
+    "test": "node --experimental-vm-modules --test test/*.test.mjs",
     "build": "webpack --mode production",
     "generate:icons": "node scripts/generate-icons.mjs",
     "build:customer": "npm run build && node scripts/generate-customer-manifest.mjs --label customer",

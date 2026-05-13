@@ -10,12 +10,14 @@
 </head>
 <body>
     <header class="header">
-        <span class="logo">CellFocus</span>
+        <span class="active-context" id="active-context">CellFocus</span>
         <span class="sync-status" id="sync-status">
             <span class="status-dot" id="status-dot"></span>
             <span class="status-text" id="status-text"></span>
         </span>
     </header>
+
+    <div class="notification-bar" id="notification-bar"></div>
 
     <nav class="tab-bar" id="tab-bar">
         <!-- tabs injected by JS -->
@@ -24,8 +26,19 @@
 
     <main class="grid-container" id="grid-container">
         <div class="empty-state" id="empty-state">
-            <p id="empty-message"></p>
+            <div class="onboarding">
+                <div class="onboarding-step">
+                    <span class="step-num">1</span>
+                    <span id="step1-label"></span>
+                </div>
+                <div class="onboarding-arrow">↓</div>
+                <div class="onboarding-step">
+                    <span class="step-num">2</span>
+                    <span id="step2-label"></span>
+                </div>
+            </div>
             <button class="primary-btn" id="capture-btn"></button>
+            <span class="shortcut-hint" id="shortcut-hint"></span>
         </div>
     </main>
 

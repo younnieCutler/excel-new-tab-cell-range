@@ -1,6 +1,6 @@
 import { isAddressWithinRange } from './utils.js';
 
-// eventHandlers: tabId → { sheet, handler } for cleanup
+// eventHandlers: tabId → { sheetName, handler } for cleanup
 const eventHandlers = new Map();
 let lastWorksheetSelection = null;
 
@@ -90,6 +90,7 @@ export async function captureSelection({ preferTrackedSelection = false } = {}) 
 export async function selectSourceCell(tab, row, col) {
     return Excel.run(async (ctx) => {
         const sheet = ctx.workbook.worksheets.getItem(tab.sheetName);
+        sheet.activate();
         const cell = sheet.getRange(tab.address).getCell(row, col);
         cell.select();
         await ctx.sync();
@@ -110,18 +111,19 @@ export async function registerChangeListener(tab, onCellChanged) {
         await ctx.sync();
     });
 
-    eventHandlers.set(tab.id, handlerFn);
+    eventHandlers.set(tab.id, { sheetName: tab.sheetName, handler: handlerFn });
 
     return () => deregisterChangeListener(tab.id);
 }
 
 export async function deregisterChangeListener(tabId) {
-    const handler = eventHandlers.get(tabId);
-    if (!handler) return;
+    const entry = eventHandlers.get(tabId);
+    if (!entry) return;
     try {
         await Excel.run(async (ctx) => {
             // Office.js removes by reference
-            ctx.workbook.worksheets.onChanged.remove(handler);
+            const sheet = ctx.workbook.worksheets.getItem(entry.sheetName);
+            sheet.onChanged.remove(entry.handler);
             await ctx.sync();
         });
     } catch {

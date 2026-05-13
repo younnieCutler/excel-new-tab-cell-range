@@ -11,15 +11,28 @@ export class TabManager {
     }
 
     addTab(tabData) {
-        if (this.tabs.size >= MAX_TABS) {
-            alert(t('maxTabsReached'));
-            return null;
-        }
+        if (this.tabs.size >= MAX_TABS) return null;
         const id = generateId();
         this.tabs.set(id, { ...tabData, id });
         this.activeTabId = id;
         this._notify();
         return id;
+    }
+
+    addEmptyTab() {
+        if (this.tabs.size >= MAX_TABS) return null;
+        const id = generateId();
+        this.tabs.set(id, { id, sheetName: null, address: null, cells: null });
+        this.activeTabId = id;
+        this._notify();
+        return id;
+    }
+
+    fillTab(id, tabData) {
+        const tab = this.tabs.get(id);
+        if (!tab) return;
+        this.tabs.set(id, { ...tab, ...tabData });
+        this._notify();
     }
 
     removeTab(id) {

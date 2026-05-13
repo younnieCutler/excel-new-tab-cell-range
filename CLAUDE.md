@@ -6,6 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 npm run dev        # Start webpack-dev-server on https://localhost:3000 (hot reload)
+npm test           # Run focused Node regression tests
 npm start          # Start dev server + sideload add-in into Excel Desktop
 npm run build      # Production build → dist/
 npm run stop       # Unload add-in from Excel
@@ -25,13 +26,13 @@ src/
 ├── taskpane/
 │   ├── taskpane.js          # Entry point. Wires modules, exposes window.captureSelectedRange
 │   ├── taskpane.html        # Shell HTML (Office.js CDN + webpack-injected bundle)
-│   ├── taskpane.css         # Dark theme design tokens + component styles
+│   ├── taskpane.css         # Excel-like light theme tokens + component styles
 │   └── modules/
 │       ├── i18n.js          # t(key) — Japanese default, English fallback via Office.context.displayLanguage
 │       ├── utils.js         # parseAddress, isAddressWithinRange, buildCellStyle
 │       ├── tabManager.js    # Tab CRUD (max 8), active tab state, onChange callbacks
-│       ├── syncEngine.js    # captureSelection/captureRange, writeBack, change listeners
-│       └── gridRenderer.js  # <table> renderer: Excel formatting → inline CSS, span/input edit toggle
+│       ├── syncEngine.js    # captureSelection/captureRange, source cell selection, change listeners
+│       └── gridRenderer.js  # <table> renderer: displays captured cells and selects source cells
 └── commands/
     ├── commands.js          # openInCellFocus: shows taskpane then calls window.captureSelectedRange
     └── commands.html        # Minimal function file HTML (no visible UI)
@@ -41,12 +42,12 @@ manifest.xml                 # Add-in manifest: Shared Runtime, ContextMenu, rib
 
 ## Key Behaviors
 
-**Formatting**: Uses `getCellProperties()` to load `text` (Excel-formatted display string), raw `value`, and `format.*` (fill/font/borders/alignment) per cell. The `text` field is displayed; `value` is used for editing.
+**Captured values**: Loads `address`, `rowCount`, `columnCount`, `values`, and `text` for the selected range. The taskpane displays Excel's formatted `text` when available and falls back to raw `value`.
 
-**Edit flow**: Click/type on a `<td>` → hides `<span class="cell-display">`, shows `<input class="cell-edit">` with raw value → Enter/Tab/blur triggers `syncEngine.writeBack()` → reloads formatted `text` from Excel.
+**Native Excel operation flow**: Click a `<td>` in the taskpane → `syncEngine.selectSourceCell()` activates the tab's source worksheet and selects the matching cell in Excel. Editing, undo, keyboard movement, fill handle, and formulas remain native Excel behavior.
 
-**Event loop prevention**: `syncEngine.js` uses a module-level `isWritingBack` boolean flag. The `onChanged` listener skips processing while `writeBack` is in progress.
+**Change listeners**: Each captured tab registers a worksheet-level `onChanged` listener against its source sheet. Listener cleanup is keyed by tab ID and removes the handler from the same worksheet it was added to.
 
-**Merge cells**: `getCellProperties()` returns `isMerged` + `mergeArea.address` per cell. `gridRenderer.js` identifies slave cells (non-top-left in a merge area) and skips `<td>` creation for them; master cells get `rowSpan`/`colSpan`.
+**Multiple sheets**: Selection tracking records `worksheetId`, so the taskpane can capture a selection made on another sheet even while the taskpane keeps focus. Source-cell clicks explicitly activate the source worksheet before selecting the cell.
 
 **Deployment**: Public Marketplace/AppSource uses public HTTPS static hosting + Partner Center submission. Customer-owned HTTPS static hosting + Microsoft 365 Admin centralized deployment remains available for private installs.

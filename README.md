@@ -1,15 +1,16 @@
-# CellFocus — Excel 集中編集アドイン
+# CellFocus — Excel 集中操作アドイン
 
-選択したセル範囲を独立したタブに分離し、リボンなしで集中編集できる Excel Office.js アドイン。
+選択したセル範囲を独立したタブに分離し、クリックしたセルを元の Excel シート上で選択して、Excel 標準の編集・Undo・キーボード操作をそのまま使う Office.js アドイン。
 
 ## 主な機能
 
 - **範囲タブ** — 複数のセル範囲を同時に8タブまで管理
-- **完全な書式再現** — フォント・背景色・罫線・数値フォーマット・セル結合をそのまま表示
-- **双方向同期** — アドイン側の編集は即座に元セルへ反映、Excel側の変更もアドインに反映
+- **複数シート対応** — 他シートの範囲も個別タブとして保持し、セルクリック時に元シートへ移動
+- **Excel標準操作** — 編集・Undo・Tab/Enter移動などは Excel 本体に任せるため、操作感が Excel と一致
+- **Excel変更同期** — Excel側の変更を監視し、対象範囲の表示を更新
 - **キーボードショートカット** — `Ctrl+Shift+F` で選択範囲を即座に開く
 - **右クリックメニュー** — セル右クリック →「CellFocusで開く」
-- **ダークテーマ** — 目に優しいミニマルUI
+- **Excel風ライトUI** — シートタブに近い軽量なタブUI
 
 ## インストール（サイドロード）
 
@@ -95,13 +96,13 @@ npm run build:customer -- --base-url https://cellfocus.customer.example
 src/
 ├── taskpane/
 │   ├── taskpane.js          # エントリーポイント
-│   ├── taskpane.html / .css # UI（ダークテーマ）
+│   ├── taskpane.html / .css # UI（Excel風ライトテーマ）
 │   └── modules/
 │       ├── i18n.js          # 日本語デフォルト・英語フォールバック
 │       ├── utils.js         # アドレス解析・書式変換
 │       ├── tabManager.js    # タブ管理（最大8タブ）
-│       ├── syncEngine.js    # Excel ↔ アドイン双方向同期
-│       └── gridRenderer.js  # HTMLテーブル書式レンダラー
+│       ├── syncEngine.js    # 選択範囲の取得・Excel変更監視・元セル選択
+│       └── gridRenderer.js  # HTMLテーブル表示と元セル選択
 └── commands/
     └── commands.js          # 右クリック・ショートカット処理
 ```
