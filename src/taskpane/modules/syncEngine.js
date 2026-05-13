@@ -6,52 +6,41 @@ let isWritingBack = false;
 // eventHandlers: tabId → { sheet, handler } for cleanup
 const eventHandlers = new Map();
 
-// Capture all cell data for a range using getCellProperties (Office.js 1.9+)
+function stripSheetPrefix(address) {
+    const bangIndex = address.indexOf('!');
+    return bangIndex === -1 ? address : address.slice(bangIndex + 1);
+}
+
+function buildCells(values, text) {
+    const rowCount = values.length;
+    const colCount = values[0]?.length ?? 0;
+    return Array.from({ length: rowCount }, (_, row) => (
+        Array.from({ length: colCount }, (_, col) => ({
+            value: values[row]?.[col] ?? '',
+            text: text[row]?.[col] ?? values[row]?.[col] ?? '',
+        }))
+    ));
+}
+
+async function captureRangeInContext(ctx, sheetName, address) {
+    const sheet = ctx.workbook.worksheets.getItem(sheetName);
+    const rangeAddress = stripSheetPrefix(address);
+    const range = sheet.getRange(rangeAddress);
+    range.load(['address', 'rowCount', 'columnCount', 'values', 'text']);
+    await ctx.sync();
+
+    return {
+        sheetName,
+        address: range.address,
+        rowCount: range.rowCount,
+        colCount: range.columnCount,
+        cells: buildCells(range.values, range.text),
+    };
+}
+
+// Capture all display text and raw values for a range.
 export async function captureRange(sheetName, address) {
-    return Excel.run(async (ctx) => {
-        const sheet = ctx.workbook.worksheets.getItem(sheetName);
-        const range = sheet.getRange(address);
-        range.load(['rowCount', 'columnCount']);
-
-        const propsResult = range.getCellProperties({
-            address: true,
-            value: true,
-            text: true,
-            isMerged: true,
-            mergeArea: { address: true },
-            format: {
-                fill: { color: true },
-                font: {
-                    bold: true,
-                    italic: true,
-                    size: true,
-                    name: true,
-                    color: true,
-                    strikethrough: true,
-                    underline: true,
-                },
-                horizontalAlignment: true,
-                verticalAlignment: true,
-                wrapText: true,
-                borders: {
-                    top: { style: true, color: true, weight: true },
-                    bottom: { style: true, color: true, weight: true },
-                    left: { style: true, color: true, weight: true },
-                    right: { style: true, color: true, weight: true },
-                },
-            },
-        });
-
-        await ctx.sync();
-
-        return {
-            sheetName,
-            address,
-            rowCount: range.rowCount,
-            colCount: range.columnCount,
-            cells: propsResult.value,  // 2D array of CellProperties
-        };
-    });
+    return Excel.run((ctx) => captureRangeInContext(ctx, sheetName, address));
 }
 
 // Capture only current selection (uses active worksheet)
@@ -63,7 +52,7 @@ export async function captureSelection() {
 
         const sheetName = range.worksheet.name;
         const address = range.address;
-        return captureRange(sheetName, address);
+        return captureRangeInContext(ctx, sheetName, address);
     });
 }
 
