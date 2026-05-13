@@ -53,6 +53,7 @@ module.exports = (env, options) => {
             new CopyWebpackPlugin({
                 patterns: [
                     { from: 'assets', to: 'assets', noErrorOnMissing: true },
+                    { from: 'public', to: '.', noErrorOnMissing: true },
                     { from: 'src/shortcuts.json', to: 'shortcuts.json' },
                 ],
             }),
@@ -63,6 +64,7 @@ module.exports = (env, options) => {
             server: {
                 type: 'https',
                 options: (() => {
+                    if (isProd) return {};
                     try {
                         return require('office-addin-dev-certs').getHttpsServerOptions();
                     } catch {

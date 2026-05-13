@@ -10,17 +10,17 @@
   <DefaultLocale>ja-JP</DefaultLocale>
   <DisplayName DefaultValue="CellFocus" />
   <Description DefaultValue="Open selected cell ranges in focused editing tabs." />
-  <IconUrl DefaultValue="https://younnieCutler.github.io/excel-new-tab-cell-range/assets/icon-32.png" />
-  <HighResolutionIconUrl DefaultValue="https://younnieCutler.github.io/excel-new-tab-cell-range/assets/icon-80.png" />
-  <SupportUrl DefaultValue="https://github.com/younnieCutler/excel-new-tab-cell-range" />
+  <IconUrl DefaultValue="https://cellfocus.example.com/assets/icon-32.png" />
+  <HighResolutionIconUrl DefaultValue="https://cellfocus.example.com/assets/icon-80.png" />
+  <SupportUrl DefaultValue="https://cellfocus.example.com/support.html" />
   <AppDomains>
-    <AppDomain>https://younnieCutler.github.io</AppDomain>
+    <AppDomain>https://cellfocus.example.com</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Workbook" />
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://younnieCutler.github.io/excel-new-tab-cell-range/taskpane.html" />
+    <SourceLocation DefaultValue="https://cellfocus.example.com/taskpane.html" />
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
 
@@ -40,6 +40,11 @@
             <OfficeTab id="TabHome">
               <Group id="CellFocus.Group">
                 <Label resid="CellFocus.GroupLabel" />
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16x16" />
+                  <bt:Image size="32" resid="Icon.32x32" />
+                  <bt:Image size="80" resid="Icon.80x80" />
+                </Icon>
                 <Control xsi:type="Button" id="CellFocus.OpenButton">
                   <Label resid="CellFocus.ButtonLabel" />
                   <Supertip>
@@ -65,6 +70,15 @@
             <OfficeMenu id="ContextMenuCell">
               <Control xsi:type="Button" id="CellFocus.ContextMenuBtn">
                 <Label resid="CellFocus.ButtonLabel" />
+                <Supertip>
+                  <Title resid="CellFocus.ButtonLabel" />
+                  <Description resid="CellFocus.ButtonDesc" />
+                </Supertip>
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16x16" />
+                  <bt:Image size="32" resid="Icon.32x32" />
+                  <bt:Image size="80" resid="Icon.80x80" />
+                </Icon>
                 <Action xsi:type="ExecuteFunction">
                   <FunctionName>openInCellFocus</FunctionName>
                 </Action>
@@ -75,18 +89,15 @@
       </Host>
     </Hosts>
 
-    <!-- Keyboard shortcut via ExtendedOverrides -->
-    <ExtendedOverrides Url="https://younnieCutler.github.io/excel-new-tab-cell-range/shortcuts.json" />
-
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://younnieCutler.github.io/excel-new-tab-cell-range/assets/icon-16.png" />
-        <bt:Image id="Icon.32x32" DefaultValue="https://younnieCutler.github.io/excel-new-tab-cell-range/assets/icon-32.png" />
-        <bt:Image id="Icon.80x80" DefaultValue="https://younnieCutler.github.io/excel-new-tab-cell-range/assets/icon-80.png" />
+        <bt:Image id="Icon.16x16" DefaultValue="https://cellfocus.example.com/assets/icon-16.png" />
+        <bt:Image id="Icon.32x32" DefaultValue="https://cellfocus.example.com/assets/icon-32.png" />
+        <bt:Image id="Icon.80x80" DefaultValue="https://cellfocus.example.com/assets/icon-80.png" />
       </bt:Images>
       <bt:Urls>
-        <bt:Url id="Commands.Url" DefaultValue="https://younnieCutler.github.io/excel-new-tab-cell-range/commands.html" />
-        <bt:Url id="Taskpane.Url" DefaultValue="https://younnieCutler.github.io/excel-new-tab-cell-range/taskpane.html" />
+        <bt:Url id="Commands.Url" DefaultValue="https://cellfocus.example.com/commands.html" />
+        <bt:Url id="Taskpane.Url" DefaultValue="https://cellfocus.example.com/taskpane.html" />
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="CellFocus.GroupLabel" DefaultValue="CellFocus" />
@@ -97,4 +108,7 @@
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
+
+  <!-- Keyboard shortcut via ExtendedOverrides -->
+  <ExtendedOverrides Url="https://cellfocus.example.com/shortcuts.json" />
 </OfficeApp>

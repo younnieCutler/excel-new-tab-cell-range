@@ -45,14 +45,49 @@ npm stop
 
 ## デプロイ
 
-`main` ブランチへのプッシュで GitHub Actions が自動実行されます:
+CellFocus は 2 つのデプロイ経路をサポートします。
 
+### Microsoft Marketplace / AppSource 公開配布
+
+公開 HTTPS ホスティングに `dist/` を配置し、Partner Center に `dist/manifest.xml` を提出します。
+
+GitHub Pages を使う場合:
+
+```bash
+npm run build:github-pages
 ```
-git push origin main
-→ npm run build
-→ dist/ を gh-pages ブランチへデプロイ
-→ https://younnieCutler.github.io/excel-new-tab-cell-range/
+
+このリポジトリの標準公開 URL:
+
+```text
+https://younnieCutler.github.io/excel-new-tab-cell-range/
 ```
+
+`main` に push すると GitHub Actions が `dist/` を `gh-pages` ブランチへ公開します。
+
+任意の公開 HTTPS ホストを使う場合:
+
+```bash
+npm run build:marketplace -- \
+  --base-url https://cellfocus.example.com \
+  --support-url https://cellfocus.example.com/support.html
+
+npm run validate:marketplace
+```
+
+詳細: [docs/marketplace-release-ko.md](docs/marketplace-release-ko.md)
+
+### 顧客テナント配布
+
+顧客環境の HTTPS 静的ホスティング + Microsoft 365 Admin 中央配布で使います。
+
+```bash
+npm run build:customer -- --base-url https://cellfocus.customer.example
+```
+
+生成された `dist/` を顧客環境の HTTPS 静的ホスティングに配置し、`dist/manifest.xml` を Microsoft 365 Admin Center で組織配布します。
+
+詳細: [docs/customer-deployment-ko.md](docs/customer-deployment-ko.md)
 
 ## アーキテクチャ
 
@@ -71,7 +106,7 @@ src/
     └── commands.js          # 右クリック・ショートカット処理
 ```
 
-**技術スタック**: Office.js (Shared Runtime) / Vanilla JS / Webpack / GitHub Pages
+**技術スタック**: Office.js (Shared Runtime) / Vanilla JS / Webpack / HTTPS 静的ホスティング
 
 ## ライセンス
 

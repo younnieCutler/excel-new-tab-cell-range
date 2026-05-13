@@ -14,7 +14,7 @@ npm run validate   # Validate manifest.xml
 
 First-time setup: `npx office-addin-dev-certs install` (generates trusted HTTPS cert for localhost).
 
-After production build, update `manifest.xml` and `shortcuts.json` URLs from `https://localhost:3000/` to your GitHub Pages URL before sideloading.
+For public Marketplace deployment on this repo, use `npm run build:github-pages`; it generates a manifest for `https://younnieCutler.github.io/excel-new-tab-cell-range`. For another public host, use `npm run build:marketplace -- --base-url https://<public-host> --support-url https://<public-host>/support.html`, deploy `dist/`, then run `npm run validate:marketplace`. For customer/internal deployment, use `npm run build:customer -- --base-url https://<customer-host>`.
 
 ## Architecture
 
@@ -49,4 +49,4 @@ manifest.xml                 # Add-in manifest: Shared Runtime, ContextMenu, rib
 
 **Merge cells**: `getCellProperties()` returns `isMerged` + `mergeArea.address` per cell. `gridRenderer.js` identifies slave cells (non-top-left in a merge area) and skips `<td>` creation for them; master cells get `rowSpan`/`colSpan`.
 
-**Deployment**: GitHub Actions (`.github/workflows/deploy.yml`) builds on push to `main` and deploys `dist/` to `gh-pages` branch via GitHub Pages. Zero server cost.
+**Deployment**: Public Marketplace/AppSource uses public HTTPS static hosting + Partner Center submission. Customer-owned HTTPS static hosting + Microsoft 365 Admin centralized deployment remains available for private installs.

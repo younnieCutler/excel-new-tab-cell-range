@@ -12,7 +12,7 @@
   <Description DefaultValue="Open selected cell ranges in focused editing tabs." />
   <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png" />
   <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-80.png" />
-  <SupportUrl DefaultValue="https://github.com/younnieCutler/excel-new-tab-cell-range" />
+  <SupportUrl DefaultValue="https://localhost:3000/support" />
   <AppDomains>
     <AppDomain>https://localhost:3000</AppDomain>
   </AppDomains>
@@ -38,6 +38,11 @@
             <OfficeTab id="TabHome">
               <Group id="CellFocus.Group">
                 <Label resid="CellFocus.GroupLabel" />
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16x16" />
+                  <bt:Image size="32" resid="Icon.32x32" />
+                  <bt:Image size="80" resid="Icon.80x80" />
+                </Icon>
                 <Control xsi:type="Button" id="CellFocus.OpenButton">
                   <Label resid="CellFocus.ButtonLabel" />
                   <Supertip>
@@ -62,6 +67,15 @@
             <OfficeMenu id="ContextMenuCell">
               <Control xsi:type="Button" id="CellFocus.ContextMenuBtn">
                 <Label resid="CellFocus.ButtonLabel" />
+                <Supertip>
+                  <Title resid="CellFocus.ButtonLabel" />
+                  <Description resid="CellFocus.ButtonDesc" />
+                </Supertip>
+                <Icon>
+                  <bt:Image size="16" resid="Icon.16x16" />
+                  <bt:Image size="32" resid="Icon.32x32" />
+                  <bt:Image size="80" resid="Icon.80x80" />
+                </Icon>
                 <Action xsi:type="ExecuteFunction">
                   <FunctionName>openInCellFocus</FunctionName>
                 </Action>
@@ -71,8 +85,6 @@
         </DesktopFormFactor>
       </Host>
     </Hosts>
-
-    <ExtendedOverrides Url="https://localhost:3000/shortcuts.json" />
 
     <Resources>
       <bt:Images>
@@ -93,4 +105,6 @@
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>
+
+  <ExtendedOverrides Url="https://localhost:3000/shortcuts.json" />
 </OfficeApp>
