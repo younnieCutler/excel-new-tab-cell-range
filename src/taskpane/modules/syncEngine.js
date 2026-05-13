@@ -116,6 +116,15 @@ export async function registerChangeListener(tab, onCellChanged) {
     return () => deregisterChangeListener(tab.id);
 }
 
+export async function writeCell(tab, row, col, value) {
+    return Excel.run(async (ctx) => {
+        const sheet = ctx.workbook.worksheets.getItem(tab.sheetName);
+        const cell = sheet.getRange(tab.address).getCell(row, col);
+        cell.values = [[value]];
+        await ctx.sync();
+    });
+}
+
 export async function deregisterChangeListener(tabId) {
     const entry = eventHandlers.get(tabId);
     if (!entry) return;

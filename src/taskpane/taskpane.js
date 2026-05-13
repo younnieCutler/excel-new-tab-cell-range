@@ -35,7 +35,7 @@ Office.onReady((info) => {
         console.warn('Selection tracking unavailable:', err);
     });
 
-    document.getElementById('capture-btn').addEventListener('click', () => doCapture({ preferTrackedSelection: true }));
+    document.getElementById('capture-btn').addEventListener('click', () => doCapture({ preferTrackedSelection: false }));
     document.getElementById('add-tab-btn').addEventListener('click', () => {
         const id = tabManager.addEmptyTab();
         if (!id) showNotification(t('maxTabsReached'), 'warning');

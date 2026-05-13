@@ -1,5 +1,5 @@
 import { parseAddress, buildCellStyle } from './utils.js';
-import { selectSourceCell } from './syncEngine.js';
+import { writeCell } from './syncEngine.js';
 
 export class GridRenderer {
     constructor(container, onSyncStart, onSyncDone, onSyncError) {
@@ -94,32 +94,61 @@ export class GridRenderer {
         span.className = 'cell-display';
         span.textContent = cellProps.text ?? cellProps.value ?? '';
 
-        td.title = 'Selects the source cell in Excel. Edit in Excel to keep native undo and keyboard behavior.';
         td.appendChild(span);
 
-        this._attachCellEvents(td, tab, r, c);
+        this._attachCellEvents(td, tab, r, c, cellProps);
         return td;
     }
 
-    _attachCellEvents(td, tab, r, c) {
-        td.addEventListener('click', async () => {
-            this.onSyncStart?.();
-            try {
-                await selectSourceCell(tab, r, c);
-                this._markSelectedCell(r, c);
-                this.onSyncDone?.();
-            } catch (err) {
-                console.error('select source cell failed', err);
-                this.onSyncError?.();
-            }
-        });
-    }
+    _attachCellEvents(td, tab, r, c, cellProps) {
+        td.addEventListener('click', () => {
+            if (td.querySelector('.cell-edit')) return;
 
-    _markSelectedCell(row, col) {
-        this.container.querySelectorAll('.source-selected').forEach((el) => {
-            el.classList.remove('source-selected');
+            const span = td.querySelector('.cell-display');
+            const originalValue = cellProps.value ?? '';
+
+            const input = document.createElement('input');
+            input.className = 'cell-edit';
+            input.value = String(originalValue);
+            span.replaceWith(input);
+            input.focus();
+            input.select();
+
+            let committed = false;
+            const commit = async () => {
+                if (committed) return;
+                committed = true;
+
+                const newValue = input.value;
+                const restoredSpan = document.createElement('span');
+                restoredSpan.className = 'cell-display';
+                restoredSpan.textContent = newValue !== '' ? newValue : (cellProps.text ?? '');
+                if (input.parentNode) input.replaceWith(restoredSpan);
+
+                if (newValue !== String(originalValue)) {
+                    this.onSyncStart?.();
+                    try {
+                        await writeCell(tab, r, c, newValue);
+                        this.onSyncDone?.();
+                    } catch (err) {
+                        console.error('Cell write failed:', err);
+                        restoredSpan.textContent = cellProps.text ?? cellProps.value ?? '';
+                        this.onSyncError?.();
+                    }
+                }
+            };
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') { e.preventDefault(); commit(); }
+                if (e.key === 'Escape') {
+                    committed = true;
+                    const restoredSpan = document.createElement('span');
+                    restoredSpan.className = 'cell-display';
+                    restoredSpan.textContent = cellProps.text ?? cellProps.value ?? '';
+                    if (input.parentNode) input.replaceWith(restoredSpan);
+                }
+            });
+            input.addEventListener('blur', commit);
         });
-        const td = this.container.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-        td?.classList.add('source-selected');
     }
 }

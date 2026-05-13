@@ -267,7 +267,7 @@ body {
     border: 1px solid var(--border);
     vertical-align: middle;
     position: relative;
-    cursor: pointer;
+    cursor: text;
     outline: none;
     background: var(--bg-cell);
 }
