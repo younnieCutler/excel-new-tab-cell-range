@@ -120,8 +120,14 @@ export async function writeCell(tab, row, col, value) {
     return Excel.run(async (ctx) => {
         const sheet = ctx.workbook.worksheets.getItem(tab.sheetName);
         const cell = sheet.getRange(tab.address).getCell(row, col);
-        cell.values = [[value]];
+        if (typeof value === 'string' && value.startsWith('=')) {
+            cell.formulas = [[value]];
+        } else {
+            cell.values = [[value]];
+        }
+        cell.load(['values', 'text']);
         await ctx.sync();
+        return { value: cell.values[0][0], text: cell.text[0][0] };
     });
 }
 

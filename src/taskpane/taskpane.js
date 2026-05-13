@@ -26,7 +26,7 @@ Office.onReady((info) => {
         document.getElementById('grid-container'),
         () => setSyncState('busy'),
         () => setSyncState('ok'),
-        () => setSyncState('error'),
+        () => { setSyncState('error'); showNotification(t('syncError'), 'error'); },
     );
 
     tabManager.onChange(renderAll);

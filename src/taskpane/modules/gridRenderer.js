@@ -128,7 +128,8 @@ export class GridRenderer {
                 if (newValue !== String(originalValue)) {
                     this.onSyncStart?.();
                     try {
-                        await writeCell(tab, r, c, newValue);
+                        const result = await writeCell(tab, r, c, newValue);
+                        restoredSpan.textContent = result.text ?? String(result.value) ?? newValue;
                         this.onSyncDone?.();
                     } catch (err) {
                         console.error('Cell write failed:', err);
