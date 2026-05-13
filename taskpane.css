@@ -1,0 +1,229 @@
+:root {
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --bg-cell: #334155;
+    --accent: #38bdf8;
+    --text-main: #f1f5f9;
+    --text-dim: #94a3b8;
+    --border: rgba(255, 255, 255, 0.1);
+    --sync-ok: #22c55e;
+    --sync-err: #ef4444;
+    --sync-busy: #f59e0b;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    padding: 0;
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    font-size: 13px;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ── Header ── */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: -0.3px;
+}
+
+.sync-status {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--sync-ok);
+    flex-shrink: 0;
+    transition: background 0.2s;
+}
+.status-dot.busy   { background: var(--sync-busy); }
+.status-dot.error  { background: var(--sync-err); }
+
+/* ── Tab Bar ── */
+.tab-bar {
+    display: flex;
+    align-items: flex-end;
+    background: var(--bg-card);
+    padding: 4px 8px 0;
+    gap: 3px;
+    overflow-x: auto;
+    flex-shrink: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    border-radius: 6px 6px 0 0;
+    font-size: 12px;
+    color: var(--text-dim);
+    cursor: pointer;
+    white-space: nowrap;
+    max-width: 160px;
+    transition: background 0.15s, color 0.15s;
+}
+
+.tab:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+
+.tab.active {
+    background: var(--bg-main);
+    color: var(--text-main);
+    border-top: 2px solid var(--accent);
+}
+
+.tab-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tab-close {
+    font-size: 14px;
+    line-height: 1;
+    opacity: 0.5;
+    flex-shrink: 0;
+    padding: 0 2px;
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+}
+.tab-close:hover { opacity: 1; }
+
+.add-tab-btn {
+    padding: 4px 10px;
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 6px 6px 0 0;
+    color: var(--text-dim);
+    font-size: 16px;
+    cursor: pointer;
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+}
+.add-tab-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ── Grid Container ── */
+.grid-container {
+    flex: 1;
+    overflow: auto;
+    padding: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    gap: 12px;
+    color: var(--text-dim);
+    text-align: center;
+    padding: 24px;
+}
+
+.primary-btn {
+    background: var(--accent);
+    color: var(--bg-main);
+    border: none;
+    padding: 8px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.primary-btn:hover { filter: brightness(1.1); }
+
+/* ── Grid Table ── */
+.grid-table {
+    border-collapse: collapse;
+    width: max-content;
+    min-width: 100%;
+}
+
+.grid-table td {
+    min-width: 64px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid var(--border);
+    vertical-align: middle;
+    position: relative;
+    cursor: default;
+    outline: none;
+}
+
+.grid-table td:focus {
+    box-shadow: inset 0 0 0 2px var(--accent);
+    z-index: 1;
+}
+
+.cell-display {
+    display: block;
+    padding: 2px 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-height: 18px;
+    pointer-events: none;
+    user-select: none;
+}
+
+.cell-edit {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 2px 4px;
+    border: none;
+    background: var(--bg-cell);
+    color: var(--text-main);
+    font: inherit;
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--accent);
+    z-index: 2;
+}
+
+/* ── Footer ── */
+.footer {
+    padding: 4px 12px;
+    font-size: 11px;
+    color: var(--text-dim);
+    border-top: 1px solid var(--border);
+    background: var(--bg-card);
+    flex-shrink: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
