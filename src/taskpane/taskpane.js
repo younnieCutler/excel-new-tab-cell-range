@@ -2,7 +2,7 @@ import './taskpane.css';
 import { t } from './modules/i18n.js';
 import { TabManager } from './modules/tabManager.js';
 import { GridRenderer } from './modules/gridRenderer.js';
-import { captureSelection, captureRange, registerChangeListener, deregisterChangeListener } from './modules/syncEngine.js';
+import { captureSelection, captureRange, registerChangeListener, deregisterChangeListener, registerSelectionTracker } from './modules/syncEngine.js';
 
 const tabManager = new TabManager();
 let gridRenderer = null;
@@ -29,16 +29,20 @@ Office.onReady((info) => {
 
     tabManager.onChange(renderAll);
 
-    document.getElementById('capture-btn').addEventListener('click', doCapture);
-    document.getElementById('add-tab-btn').addEventListener('click', doCapture);
+    registerSelectionTracker().catch((err) => {
+        console.warn('Selection tracking unavailable:', err);
+    });
+
+    document.getElementById('capture-btn').addEventListener('click', () => doCapture({ preferTrackedSelection: true }));
+    document.getElementById('add-tab-btn').addEventListener('click', () => doCapture({ preferTrackedSelection: true }));
 
     renderAll();
 });
 
-async function doCapture() {
+async function doCapture(options = {}) {
     setSyncState('busy');
     try {
-        const tabData = await captureSelection();
+        const tabData = await captureSelection(options);
         const tabId = tabManager.addTab(tabData);
         if (tabId) {
             const cleanup = await registerChangeListener(tabData, (changedAddress) => {

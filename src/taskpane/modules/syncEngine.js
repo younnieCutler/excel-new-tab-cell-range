@@ -5,6 +5,7 @@ let isWritingBack = false;
 
 // eventHandlers: tabId → { sheet, handler } for cleanup
 const eventHandlers = new Map();
+let lastWorksheetSelection = null;
 
 function stripSheetPrefix(address) {
     const bangIndex = address.indexOf('!');
@@ -43,8 +44,41 @@ export async function captureRange(sheetName, address) {
     return Excel.run((ctx) => captureRangeInContext(ctx, sheetName, address));
 }
 
+export async function registerSelectionTracker() {
+    await Excel.run(async (ctx) => {
+        ctx.workbook.worksheets.onSelectionChanged.add((event) => {
+            lastWorksheetSelection = {
+                address: event.address,
+                worksheetId: event.worksheetId,
+                capturedAt: Date.now(),
+            };
+        });
+        await ctx.sync();
+    });
+}
+
+async function captureTrackedSelection() {
+    if (!lastWorksheetSelection) return null;
+
+    return Excel.run(async (ctx) => {
+        const sheet = ctx.workbook.worksheets.getItem(lastWorksheetSelection.worksheetId);
+        sheet.load('name');
+        await ctx.sync();
+        return captureRangeInContext(ctx, sheet.name, lastWorksheetSelection.address);
+    });
+}
+
 // Capture only current selection (uses active worksheet)
-export async function captureSelection() {
+export async function captureSelection({ preferTrackedSelection = false } = {}) {
+    if (preferTrackedSelection) {
+        try {
+            const tracked = await captureTrackedSelection();
+            if (tracked) return tracked;
+        } catch (err) {
+            console.warn('Tracked selection capture failed, falling back to current selection:', err);
+        }
+    }
+
     return Excel.run(async (ctx) => {
         const range = ctx.workbook.getSelectedRange();
         range.load(['address', 'worksheet/name']);
