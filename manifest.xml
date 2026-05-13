@@ -11,7 +11,7 @@
   <DisplayName DefaultValue="CellFocus" />
   <Description DefaultValue="Open selected cell ranges in focused editing tabs." />
   <IconUrl DefaultValue="https://cellfocus.example.com/assets/icon-32.png" />
-  <HighResolutionIconUrl DefaultValue="https://cellfocus.example.com/assets/icon-80.png" />
+  <HighResolutionIconUrl DefaultValue="https://cellfocus.example.com/assets/icon-64.png" />
   <SupportUrl DefaultValue="https://cellfocus.example.com/support.html" />
   <AppDomains>
     <AppDomain>https://cellfocus.example.com</AppDomain>
