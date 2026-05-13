@@ -1,5 +1,5 @@
 import { parseAddress, buildCellStyle } from './utils.js';
-import { writeBack } from './syncEngine.js';
+import { selectSourceCell } from './syncEngine.js';
 
 export class GridRenderer {
     constructor(container, onSyncStart, onSyncDone, onSyncError) {
@@ -94,84 +94,32 @@ export class GridRenderer {
         span.className = 'cell-display';
         span.textContent = cellProps.text ?? cellProps.value ?? '';
 
-        // Edit input (hidden by default)
-        const input = document.createElement('input');
-        input.className = 'cell-edit';
-        input.type = 'text';
-        input.value = cellProps.value ?? '';
-        input.hidden = true;
-        input.setAttribute('aria-label', `Row ${r + 1}, Column ${c + 1}`);
-
+        td.title = 'Selects the source cell in Excel. Edit in Excel to keep native undo and keyboard behavior.';
         td.appendChild(span);
-        td.appendChild(input);
 
-        this._attachCellEvents(td, input, span, tab, r, c);
+        this._attachCellEvents(td, tab, r, c);
         return td;
     }
 
-    _attachCellEvents(td, input, span, tab, r, c) {
-        const enterEdit = () => {
-            span.hidden = true;
-            input.hidden = false;
-            input.value = tab.cells[r]?.[c]?.value ?? '';
-            input.focus();
-            input.select();
-        };
-
-        const exitEdit = async (save) => {
-            input.hidden = true;
-            span.hidden = false;
-            if (!save) return;
-
-            const newValue = input.value;
+    _attachCellEvents(td, tab, r, c) {
+        td.addEventListener('click', async () => {
             this.onSyncStart?.();
             try {
-                const displayText = await writeBack(tab, r, c, newValue);
-                span.textContent = displayText;
+                await selectSourceCell(tab, r, c);
+                this._markSelectedCell(r, c);
                 this.onSyncDone?.();
             } catch (err) {
-                console.error('writeBack failed', err);
+                console.error('select source cell failed', err);
                 this.onSyncError?.();
             }
-        };
-
-        // Click to edit
-        td.addEventListener('click', () => {
-            if (!input.hidden) return;
-            enterEdit();
-        });
-
-        // Typing directly on focused td
-        td.addEventListener('keydown', (e) => {
-            if (input.hidden && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
-                enterEdit();
-                input.value = e.key;
-            }
-        });
-        td.setAttribute('tabindex', '0');
-
-        // Input key handling
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                exitEdit(false);
-                td.focus();
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                exitEdit(true).then(() => this._moveFocus(r + 1, c));
-            } else if (e.key === 'Tab') {
-                e.preventDefault();
-                exitEdit(true).then(() => this._moveFocus(r, c + (e.shiftKey ? -1 : 1)));
-            }
-        });
-
-        input.addEventListener('blur', (e) => {
-            // Only save on true blur (not when navigating via Tab/Enter handled above)
-            if (!input.hidden) exitEdit(true);
         });
     }
 
-    _moveFocus(row, col) {
+    _markSelectedCell(row, col) {
+        this.container.querySelectorAll('.source-selected').forEach((el) => {
+            el.classList.remove('source-selected');
+        });
         const td = this.container.querySelector(`[data-row="${row}"][data-col="${col}"]`);
-        if (td) td.focus();
+        td?.classList.add('source-selected');
     }
 }

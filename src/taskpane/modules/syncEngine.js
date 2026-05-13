@@ -1,8 +1,5 @@
 import { isAddressWithinRange } from './utils.js';
 
-// Prevents write-back from triggering the onChanged listener
-let isWritingBack = false;
-
 // eventHandlers: tabId → { sheet, handler } for cleanup
 const eventHandlers = new Map();
 let lastWorksheetSelection = null;
@@ -90,36 +87,18 @@ export async function captureSelection({ preferTrackedSelection = false } = {}) 
     });
 }
 
-// Write a new value back to Excel and reload the cell's text (formatted display)
-export async function writeBack(tab, row, col, value) {
+export async function selectSourceCell(tab, row, col) {
     return Excel.run(async (ctx) => {
-        isWritingBack = true;
-        try {
-            const sheet = ctx.workbook.worksheets.getItem(tab.sheetName);
-            const cell = sheet.getRange(tab.address).getCell(row, col);
-            cell.values = [[value]];
-            await ctx.sync();
-
-            // Reload formatted display text after write
-            cell.load('text');
-            await ctx.sync();
-
-            const displayText = cell.text[0][0];
-            if (tab.cells[row] && tab.cells[row][col]) {
-                tab.cells[row][col].value = value;
-                tab.cells[row][col].text = displayText;
-            }
-            return displayText;
-        } finally {
-            isWritingBack = false;
-        }
+        const sheet = ctx.workbook.worksheets.getItem(tab.sheetName);
+        const cell = sheet.getRange(tab.address).getCell(row, col);
+        cell.select();
+        await ctx.sync();
     });
 }
 
 // Register onChanged listener for a tab; returns cleanup function
 export async function registerChangeListener(tab, onCellChanged) {
     const handlerFn = async (args) => {
-        if (isWritingBack) return;
         if (isAddressWithinRange(args.address, tab.address)) {
             onCellChanged(args.address);
         }
