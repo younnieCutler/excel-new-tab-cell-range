@@ -59,6 +59,21 @@ export class TabManager {
         }
     }
 
+    updateTabData(id, tabData) {
+        const tab = this.tabs.get(id);
+        if (tab) {
+            this.tabs.set(id, { ...tab, ...tabData, id });
+            this._notify();
+        }
+    }
+
+    updateTabSelection(id, selection) {
+        const tab = this.tabs.get(id);
+        if (tab) {
+            tab.selection = selection;
+        }
+    }
+
     getActiveTab() {
         return this.activeTabId ? this.tabs.get(this.activeTabId) : null;
     }

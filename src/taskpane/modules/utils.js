@@ -34,6 +34,66 @@ export function parseAddress(address) {
     return { sheet, startRow, startCol, endRow, endCol };
 }
 
+export function columnIndexToName(index) {
+    let n = index + 1;
+    let name = '';
+    while (n > 0) {
+        const rem = (n - 1) % 26;
+        name = String.fromCharCode(65 + rem) + name;
+        n = Math.floor((n - 1) / 26);
+    }
+    return name;
+}
+
+export function normalizeSelection(selection) {
+    if (!selection) return null;
+    return {
+        startRow: Math.min(selection.startRow, selection.endRow),
+        startCol: Math.min(selection.startCol, selection.endCol),
+        endRow: Math.max(selection.startRow, selection.endRow),
+        endCol: Math.max(selection.startCol, selection.endCol),
+    };
+}
+
+export function selectionToSourceAddress(tab, selection) {
+    const source = parseAddress(tab.address);
+    const normalized = normalizeSelection(selection);
+    if (!source || !normalized) return null;
+
+    const startRow = source.startRow + normalized.startRow;
+    const startCol = source.startCol + normalized.startCol;
+    const endRow = source.startRow + normalized.endRow;
+    const endCol = source.startCol + normalized.endCol;
+    const rangeAddress = `${columnIndexToName(startCol)}${startRow + 1}:${columnIndexToName(endCol)}${endRow + 1}`;
+    const sheetName = tab.sheetName ?? source.sheet;
+    return sheetName ? `${sheetName}!${rangeAddress}` : rangeAddress;
+}
+
+export function buildTsvFromSelection(tab, selection) {
+    const normalized = normalizeSelection(selection);
+    if (!normalized) return '';
+
+    const rows = [];
+    for (let row = normalized.startRow; row <= normalized.endRow; row++) {
+        const cols = [];
+        for (let col = normalized.startCol; col <= normalized.endCol; col++) {
+            const cell = tab.cells?.[row]?.[col];
+            cols.push(String(cell?.text ?? cell?.value ?? ''));
+        }
+        rows.push(cols.join('\t'));
+    }
+    return rows.join('\n');
+}
+
+export function parseTsv(text) {
+    return String(text ?? '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .replace(/\n$/, '')
+        .split('\n')
+        .map((row) => row.split('\t'));
+}
+
 // Returns true if changedAddress intersects watchAddress
 // Both may include sheet prefix (e.g. "Sheet1!B2:C3")
 export function isAddressWithinRange(changedAddress, watchAddress) {

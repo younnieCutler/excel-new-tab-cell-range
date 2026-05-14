@@ -27,6 +27,7 @@ Office.onReady((info) => {
         () => setSyncState('busy'),
         () => setSyncState('ok'),
         () => { setSyncState('error'); showNotification(t('syncError'), 'error'); },
+        (tabId, selection) => tabManager.updateTabSelection(tabId, selection),
     );
 
     tabManager.onChange(renderAll);
@@ -84,7 +85,7 @@ async function handleExcelChange(tabId, changedAddress) {
     if (!tab) return;
     try {
         const refreshed = await captureRange(tab.sheetName, tab.address);
-        tabManager.updateTabCells(tabId, refreshed.cells);
+        tabManager.updateTabData(tabId, refreshed);
         if (tabManager.activeTabId === tabId) {
             gridRenderer.render(tabManager.getActiveTab());
         }

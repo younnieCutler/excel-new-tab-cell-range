@@ -16,7 +16,33 @@ async function loadSyncEngineWithExcelMock(excelMock) {
         identifier: 'syncEngine.js',
     });
     const utils = new vm.SourceTextModule(
-        'export function isAddressWithinRange() { return true; }',
+        `
+        export function isAddressWithinRange() { return true; }
+        function colToName(index) {
+            let n = index + 1;
+            let name = '';
+            while (n > 0) {
+                const rem = (n - 1) % 26;
+                name = String.fromCharCode(65 + rem) + name;
+                n = Math.floor((n - 1) / 26);
+            }
+            return name;
+        }
+        function parseAddress(address) {
+            const range = address.includes('!') ? address.split('!')[1] : address;
+            const match = range.match(/^([A-Z]+)(\\d+):([A-Z]+)(\\d+)$/);
+            const colToIdx = (col) => [...col].reduce((n, ch) => n * 26 + ch.charCodeAt(0) - 64, 0) - 1;
+            return { startCol: colToIdx(match[1]), startRow: Number(match[2]) - 1 };
+        }
+        export function selectionToSourceAddress(tab, selection) {
+            const source = parseAddress(tab.address);
+            const startRow = source.startRow + Math.min(selection.startRow, selection.endRow);
+            const startCol = source.startCol + Math.min(selection.startCol, selection.endCol);
+            const endRow = source.startRow + Math.max(selection.startRow, selection.endRow);
+            const endCol = source.startCol + Math.max(selection.startCol, selection.endCol);
+            return tab.sheetName + '!' + colToName(startCol) + (startRow + 1) + ':' + colToName(endCol) + (endRow + 1);
+        }
+        `,
         { context, identifier: 'utils.js' },
     );
 
@@ -39,16 +65,29 @@ function createExcelMock() {
                 handlers,
                 activated: 0,
                 selectedCells: [],
+                selectedRanges: [],
+                writtenRanges: [],
                 activate() {
                     this.activated += 1;
                 },
                 getRange(address) {
+                    const worksheet = this;
                     return {
+                        values: null,
+                        select: () => {
+                            this.selectedRanges.push(address);
+                        },
                         getCell: (row, col) => ({
                             select: () => {
                                 this.selectedCells.push({ address, row, col });
                             },
                         }),
+                        set values(matrix) {
+                            worksheet.writtenRanges.push({ address, values: matrix });
+                        },
+                        get values() {
+                            return null;
+                        },
                     };
                 },
                 onChanged: {
@@ -110,5 +149,34 @@ test('selectSourceCell activates the tab worksheet before selecting the source c
     assert.equal(mock.sheets.get('Sheet2').activated, 1);
     assert.deepEqual(mock.sheets.get('Sheet2').selectedCells, [
         { address: 'Sheet2!C3:D4', row: 1, col: 0 },
+    ]);
+});
+
+test('selectSourceRange activates the tab worksheet and selects the matching source range', async () => {
+    const mock = createExcelMock();
+    const { selectSourceRange } = await loadSyncEngineWithExcelMock(mock.Excel);
+
+    await selectSourceRange(
+        { sheetName: 'Sheet2', address: 'Sheet2!B24:D29' },
+        { startRow: 1, startCol: 1, endRow: 3, endCol: 2 },
+    );
+
+    assert.equal(mock.sheets.get('Sheet2').activated, 1);
+    assert.deepEqual(mock.sheets.get('Sheet2').selectedRanges, ['C25:D27']);
+});
+
+test('writeRange writes a matrix to the matching source range', async () => {
+    const mock = createExcelMock();
+    const { writeRange } = await loadSyncEngineWithExcelMock(mock.Excel);
+
+    await writeRange(
+        { sheetName: 'Sheet1', address: 'Sheet1!B24:D29' },
+        1,
+        1,
+        [['A', 'B'], ['1', '2']],
+    );
+
+    assert.deepEqual(mock.sheets.get('Sheet1').writtenRanges, [
+        { address: 'C25:D26', values: [['A', 'B'], ['1', '2']] },
     ]);
 });

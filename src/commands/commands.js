@@ -7,7 +7,7 @@ function openInCellFocus(event) {
     Office.addin.showAsTaskpane().then(() => {
         // captureSelectedRange is exposed by taskpane.js in the Shared Runtime context
         if (typeof window.captureSelectedRange === 'function') {
-            window.captureSelectedRange();
+            window.captureSelectedRange({ preferTrackedSelection: true });
         }
     });
     event.completed();
