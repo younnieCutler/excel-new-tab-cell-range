@@ -6,6 +6,10 @@ import { captureSelection, captureRange, registerChangeListener, deregisterChang
 
 const tabManager = new TabManager();
 let gridRenderer = null;
+let gridContainerEl = null;
+let emptyStateEl = null;
+let rangeInfoEl = null;
+let activeContextEl = null;
 // Cleanup functions for change listeners: tabId → cleanup fn
 const listenerCleanups = new Map();
 
@@ -15,6 +19,11 @@ window.captureSelectedRange = doCapture;
 Office.onReady((info) => {
     if (info.host !== Office.HostType.Excel) return;
 
+    gridContainerEl = document.getElementById('grid-container');
+    emptyStateEl = document.getElementById('empty-state');
+    rangeInfoEl = document.getElementById('range-info');
+    activeContextEl = document.getElementById('active-context');
+
     // Init i18n text
     document.getElementById('capture-btn').textContent = t('captureBtn');
     document.getElementById('status-text').textContent = t('synced');
@@ -23,7 +32,7 @@ Office.onReady((info) => {
     document.getElementById('shortcut-hint').textContent = t('shortcutHint');
 
     gridRenderer = new GridRenderer(
-        document.getElementById('grid-container'),
+        gridContainerEl,
         () => setSyncState('busy'),
         () => setSyncState('ok'),
         () => { setSyncState('error'); showNotification(t('syncError'), 'error'); },
@@ -97,23 +106,20 @@ async function handleExcelChange(tabId, changedAddress) {
 function renderAll() {
     renderTabBar();
     const activeTab = tabManager.getActiveTab();
-    const emptyState = document.getElementById('empty-state');
-    const rangeInfo = document.getElementById('range-info');
-    const ctxEl = document.getElementById('active-context');
 
     if (activeTab && activeTab.cells) {
         const label = activeTab.address.includes('!') ? activeTab.address.split('!')[1] : activeTab.address;
-        emptyState.style.display = 'none';
+        emptyStateEl.style.display = 'none';
         gridRenderer.render(activeTab);
-        rangeInfo.textContent = `${activeTab.sheetName}!${label}`;
-        ctxEl.textContent = `${activeTab.sheetName}!${label}`;
+        rangeInfoEl.textContent = `${activeTab.sheetName}!${label}`;
+        activeContextEl.textContent = `${activeTab.sheetName}!${label}`;
     } else {
         // No tabs or active tab is empty — show capture UI
-        emptyState.style.display = '';
-        document.getElementById('grid-container').innerHTML = '';
-        document.getElementById('grid-container').appendChild(emptyState);
-        rangeInfo.textContent = t('noRangeSelected');
-        ctxEl.textContent = activeTab ? t('newTab') : 'CellFocus';
+        emptyStateEl.style.display = '';
+        gridContainerEl.innerHTML = '';
+        gridContainerEl.appendChild(emptyStateEl);
+        rangeInfoEl.textContent = t('noRangeSelected');
+        activeContextEl.textContent = activeTab ? t('newTab') : 'CellFocus';
     }
 }
 
