@@ -1,1 +1,1 @@
-(()=>{function e(e){Office.addin.showAsTaskpane().then(function(){"function"==typeof window.captureSelectedRange&&window.captureSelectedRange()}),e.completed()}Office.onReady(function(){Office.actions.associate("openInCellFocus",e)})})();
+(()=>{function e(e){Office.addin.showAsTaskpane().then(function(){"function"==typeof window.captureSelectedRange&&window.captureSelectedRange({preferTrackedSelection:!0})}),e.completed()}Office.onReady(function(){Office.actions.associate("openInCellFocus",e)})})();
